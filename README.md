@@ -1,22 +1,24 @@
 PUERTO: 8080
 
-Mandar un JSON al segmento write
+USAR POSTMAN
+
+Mandar un JSON al segmento write (http://localhost:8080/write)
 
     SE REQUIERE MÉTODO POST
 
-    El JSON que es válido:
+    El JSON que es válido, ejemplo:
 
     {
         "value": "TGV0J3MgR28gIzEK"
     }
 
-    Cuando se inserta el Record imprime valor en Consola
+    Cuando se inserta el Record, se imprime el record en Consola. Todo record que se busca agregar, su offset es modificado para ser el último del slice
 
-Mandar un JSON al segmento read
+Mandar un JSON al segmento read (http://localhost:8080/read)
 
     SE REQUIERE MÉTODO GET
 
-    EL JSON que es válido:
+    EL JSON que es válido, ejemplo:
 
     {
 
