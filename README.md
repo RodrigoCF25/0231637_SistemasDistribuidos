@@ -7,10 +7,10 @@ Mandar un JSON al segmento write
     El JSON que es válido:
 
     {
-
         "value": "TGV0J3MgR28gIzEK"
     }
 
+    Cuando se inserta el Record imprime valor en Consola
 
 Mandar un JSON al segmento read
 
@@ -22,4 +22,7 @@ Mandar un JSON al segmento read
 
         "offset": 0
     }
+
+    Imprime en Consola el Record obtenido si el offset existe y un record como JSON por http, ejemplo: {"value:"TGV0J3MgR28gIzEK"}
+
 

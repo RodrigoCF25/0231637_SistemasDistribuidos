@@ -67,12 +67,12 @@ func (r Record) String() string {
 }
 
 // Function to write to the log when a POST request is made to /write
-func WriteToLog(l *Log, w http.ResponseWriter, r *http.Request) error {
+func WriteToLog(l *Log, w http.ResponseWriter, r *http.Request) {
 
 	// Check if the method is POST
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return fmt.Errorf("method not allowed")
+		return
 	}
 
 	var record Record
@@ -82,21 +82,19 @@ func WriteToLog(l *Log, w http.ResponseWriter, r *http.Request) error {
 	// Check if the body is empty or if record is not empty
 	if err != nil || len(record.Value) == 0 {
 		http.Error(w, "Error reading body", http.StatusBadRequest)
-		return fmt.Errorf("error reading body")
+		return
 	}
 
 	l.Append(record)
-
-	return nil
 }
 
 // Function to read from the log when a GET request is made to /read
-func ReadFromLog(l *Log, w http.ResponseWriter, r *http.Request) error {
+func ReadFromLog(l *Log, w http.ResponseWriter, r *http.Request) {
 
 	// Check if the method is GET
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return fmt.Errorf("method not allowed")
+		return
 	}
 
 	var Offset struct {
@@ -107,7 +105,7 @@ func ReadFromLog(l *Log, w http.ResponseWriter, r *http.Request) error {
 	if err := json.NewDecoder(r.Body).Decode(&Offset); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		http.Error(w, "Invalid offset", http.StatusBadRequest)
-		return fmt.Errorf("invalid offset")
+		return
 	}
 
 	// Read the record from the log
@@ -117,7 +115,7 @@ func ReadFromLog(l *Log, w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		http.Error(w, "Record not found", http.StatusNotFound)
-		return fmt.Errorf("record not found")
+		return
 	}
 
 	// Encode the record to JSON and write it to the response
@@ -127,12 +125,10 @@ func ReadFromLog(l *Log, w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		http.Error(w, "Error encoding record", http.StatusInternalServerError)
-		return fmt.Errorf("error encoding record")
+		return
 	}
 
 	fmt.Println(record)
-
-	return nil
 
 }
 
