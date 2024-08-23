@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"sync"
 )
 
@@ -93,18 +92,19 @@ func ReadFromLog(l *Log, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Get the offset from the query and convert it to uint64
-	offset, err := strconv.ParseUint(r.URL.Query().Get("offset"), 10, 64)
+	var Offset struct {
+		Offset uint64 `json:"offset"`
+	}
 
 	// Check if the offset is invalid
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&Offset); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		http.Error(w, "Invalid offset", http.StatusBadRequest)
 		return
 	}
 
 	// Read the record from the log
-	record, err := l.Read(offset)
+	record, err := l.Read(Offset.Offset)
 
 	// Check if the record is not found
 	if err != nil {
