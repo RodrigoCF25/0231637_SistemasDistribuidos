@@ -66,7 +66,6 @@ func WriteToLog(l *Log, w http.ResponseWriter, r *http.Request) {
 	// Check if the method is POST
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		fmt.Println("Writing to log")
 		return
 	}
 
