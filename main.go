@@ -1,149 +1,204 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
-	"net/http"
-	"sync"
+
+	Log "github.com/RodrigoCF25/0231637_SistemasDistribuidos/Log"
 )
 
-const (
-	port      = ":8080"
-	writePath = "/write"
-	readPath  = "/read"
-)
+/*
+   import (
+   	"encoding/json"
+   	"fmt"
+   	"log"
+   	"net/http"
+   	"sync"
+   )
 
-type Log struct {
-	mutex   sync.RWMutex
-	records []Record
-}
+   const (
+   	port      = ":8080"
+   	writePath = "/write"
+   	readPath  = "/read"
+   )
 
-type Record struct {
-	Value  []byte `json:"value"`
-	Offset uint64 `json:"-"`
-}
+   type Log struct {
+   	mutex   sync.RWMutex
+   	records []Record
+   }
 
-// Constructor for Log
-func GetNewLog() *Log {
-	return &Log{
-		mutex:   sync.RWMutex{},
-		records: make([]Record, 0, 10),
-	}
-}
+   type Record struct {
+   	Value  []byte `json:"value"`
+   	Offset uint64 `json:"-"`
+   }
 
-// Method to append a record to the log
-func (l *Log) Append(record Record) {
-	l.mutex.Lock()
-	defer l.mutex.Unlock()
+   // Constructor for Log
+   func GetNewLog() *Log {
+   	return &Log{
+   		mutex:   sync.RWMutex{},
+   		records: make([]Record, 0, 10),
+   	}
+   }
 
-	record.Offset = uint64(len(l.records))
-	fmt.Println("Record Appended: ", record)
-	l.records = append(l.records, record)
-}
+   // Method to append a record to the log
+   func (l *Log) Append(record Record) {
+   	l.mutex.Lock()
+   	defer l.mutex.Unlock()
 
-// Method to read a record from the log
-func (l *Log) Read(offset uint64) (Record, error) {
-	l.mutex.RLock()
-	defer l.mutex.RUnlock()
+   	record.Offset = uint64(len(l.records))
+   	fmt.Println("Record Appended: ", record)
+   	l.records = append(l.records, record)
+   }
 
-	if offset >= uint64(len(l.records)) {
-		return Record{}, fmt.Errorf("offset out of range")
-	}
+   // Method to read a record from the log
+   func (l *Log) Read(offset uint64) (Record, error) {
+   	l.mutex.RLock()
+   	defer l.mutex.RUnlock()
 
-	return l.records[offset], nil
-}
+   	if offset >= uint64(len(l.records)) {
+   		return Record{}, fmt.Errorf("offset out of range")
+   	}
 
-// Stringer interface, basically the __repr__ of python
-func (l *Log) String() string {
-	l.mutex.RLock()
-	defer l.mutex.RUnlock()
+   	return l.records[offset], nil
+   }
 
-	return fmt.Sprintf("Log: %v", l.records)
-}
+   // Stringer interface, basically the __repr__ of python
+   func (l *Log) String() string {
+   	l.mutex.RLock()
+   	defer l.mutex.RUnlock()
 
-func (r Record) String() string {
-	return fmt.Sprintf("{value: %s, offset: %d}", string(r.Value), r.Offset)
-}
+   	return fmt.Sprintf("Log: %v", l.records)
+   }
 
-// Function to write to the log when a POST request is made to /write
-func WriteToLog(l *Log, w http.ResponseWriter, r *http.Request) {
+   func (r Record) String() string {
+   	return fmt.Sprintf("{value: %s, offset: %d}", string(r.Value), r.Offset)
+   }
 
-	// Check if the method is POST
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
+   // Function to write to the log when a POST request is made to /write
+   func WriteToLog(l *Log, w http.ResponseWriter, r *http.Request) {
 
-	var record Record
+   	// Check if the method is POST
+   	if r.Method != http.MethodPost {
+   		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+   		return
+   	}
 
-	err := json.NewDecoder(r.Body).Decode(&record)
+   	var record Record
 
-	// Check if the body is empty or if record is not empty
-	if err != nil || len(record.Value) == 0 {
-		http.Error(w, "Error reading body", http.StatusBadRequest)
-		return
-	}
+   	err := json.NewDecoder(r.Body).Decode(&record)
 
-	l.Append(record)
-}
+   	// Check if the body is empty or if record is not empty
+   	if err != nil || len(record.Value) == 0 {
+   		http.Error(w, "Error reading body", http.StatusBadRequest)
+   		return
+   	}
 
-// Function to read from the log when a GET request is made to /read
-func ReadFromLog(l *Log, w http.ResponseWriter, r *http.Request) {
+   	l.Append(record)
+   }
 
-	// Check if the method is GET
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
+   // Function to read from the log when a GET request is made to /read
+   func ReadFromLog(l *Log, w http.ResponseWriter, r *http.Request) {
 
-	var Offset struct {
-		Offset uint64 `json:"offset"`
-	}
+   	// Check if the method is GET
+   	if r.Method != http.MethodGet {
+   		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+   		return
+   	}
 
-	// Check if the offset is invalid
-	if err := json.NewDecoder(r.Body).Decode(&Offset); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		http.Error(w, "Invalid offset", http.StatusBadRequest)
-		return
-	}
+   	var Offset struct {
+   		Offset uint64 `json:"offset"`
+   	}
 
-	// Read the record from the log
-	record, err := l.Read(Offset.Offset)
+   	// Check if the offset is invalid
+   	if err := json.NewDecoder(r.Body).Decode(&Offset); err != nil {
+   		w.WriteHeader(http.StatusBadRequest)
+   		http.Error(w, "Invalid offset", http.StatusBadRequest)
+   		return
+   	}
 
-	// Check if the record is not found
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		http.Error(w, "Record not found", http.StatusNotFound)
-		return
-	}
+   	// Read the record from the log
+   	record, err := l.Read(Offset.Offset)
 
-	// Encode the record to JSON and write it to the response
-	err = json.NewEncoder(w).Encode(record)
+   	// Check if the record is not found
+   	if err != nil {
+   		w.WriteHeader(http.StatusNotFound)
+   		http.Error(w, "Record not found", http.StatusNotFound)
+   		return
+   	}
 
-	// Check if the encoding failed
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		http.Error(w, "Error encoding record", http.StatusInternalServerError)
-		return
-	}
+   	// Encode the record to JSON and write it to the response
+   	err = json.NewEncoder(w).Encode(record)
 
-	fmt.Println(record)
+   	// Check if the encoding failed
+   	if err != nil {
+   		w.WriteHeader(http.StatusInternalServerError)
+   		http.Error(w, "Error encoding record", http.StatusInternalServerError)
+   		return
+   	}
 
-}
+   	fmt.Println(record)
+
+   }
+
+   func main() {
+
+   	myLog := GetNewLog()
+
+   	http.HandleFunc(writePath, func(w http.ResponseWriter, r *http.Request) {
+   		WriteToLog(myLog, w, r)
+   	})
+
+   	http.HandleFunc(readPath, func(w http.ResponseWriter, r *http.Request) {
+   		ReadFromLog(myLog, w, r)
+   	})
+
+   	log.Fatal(http.ListenAndServe(port, nil))
+
+   }
+*/
 
 func main() {
 
-	myLog := GetNewLog()
+	filepath := "store.bin"
 
-	http.HandleFunc(writePath, func(w http.ResponseWriter, r *http.Request) {
-		WriteToLog(myLog, w, r)
-	})
+	store, err := Log.NewStore(filepath)
 
-	http.HandleFunc(readPath, func(w http.ResponseWriter, r *http.Request) {
-		ReadFromLog(myLog, w, r)
-	})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
-	log.Fatal(http.ListenAndServe(port, nil))
+	_, _, err = store.Append([]byte("Hello World!"))
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	_, _, err = store.Append([]byte("Hello World!"))
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	store.Close()
+
+	filepath = "index.bin"
+	index, err := Log.NewIndex(filepath)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	index.Write(2, 12)
+	index.Write(3, 24)
+
+	fmt.Println(index.Read(-1))
+	fmt.Println(index.Read(-2))
+
+	fmt.Println(index.Read(-10))
+
+	index.Close()
 
 }
