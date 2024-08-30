@@ -23,19 +23,13 @@ type Store struct {
 	size   uint64
 }
 
-func NewStore(filePath string) (*Store, error) {
-
-	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
-	if err != nil {
-		err = fmt.Errorf("could not open file: %w", err)
-		return nil, err
-	}
+func NewStore(f *os.File) (*Store, error) {
 
 	return &Store{
 		mutex:  sync.RWMutex{},
-		File:   file,
+		File:   f,
 		size:   0,
-		buffer: bufio.NewWriter(file),
+		buffer: bufio.NewWriter(f),
 	}, nil
 }
 
@@ -74,10 +68,31 @@ func (s *Store) Append(data []byte) (bytesWritten uint64, actualPosition uint64,
 
 }
 
-func (s *Store) Read(element int64) ([]byte, error) {
-	s.mutex.RLock()
-	defer s.mutex.RUnlock()
+func (s *Store) Read(absolute_position uint64) ([]byte, error) {
 
+	data := make([]byte, lenWidth)
+
+	n, err := s.ReadAt(data, int64(absolute_position))
+
+	if n == 0 {
+		return nil, fmt.Errorf("could not read from file: %w", err)
+	}
+
+	return data, nil
+
+}
+
+func (s *Store) ReadAt(p []byte, off int64) (n int, err error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	if err := s.buffer.Flush(); err != nil {
+		return 0, err
+	}
+
+	fmt.Println(("Reading at position: "), off)
+
+	return s.File.ReadAt(p, off)
 }
 
 func (s *Store) Close() error {
