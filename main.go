@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	Log "github.com/RodrigoCF25/0231637_SistemasDistribuidos/Log"
 )
@@ -160,44 +161,70 @@ func main() {
 
 	filepath := "store.bin"
 
-	store, err := Log.NewStore(filepath)
+	file, _ := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE, 0644)
+
+	store, err := Log.NewStore(file)
 
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	_, _, err = store.Append([]byte("Hello World!"))
+	_, _, err = store.Append([]byte("StolasGo"))
 
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	_, _, err = store.Append([]byte("Hello World!"))
+	_, _, err = store.Append([]byte("StolasGo"))
 
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	store.Close()
+	file, _ = os.OpenFile("index.bin", os.O_RDWR|os.O_CREATE, 0644)
 
-	filepath = "index.bin"
-	index, err := Log.NewIndex(filepath)
+	c := Log.Config{
+		Segment: Log.Segment{
+			MaxStoreBytes: 1024,
+			MaxIndexBytes: 1024,
+			InitialOffset: 0,
+		},
+	}
+
+	index, err := Log.NewIndex(file, &c)
 
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	index.Write(2, 12)
-	index.Write(3, 24)
+	index.Write(0, 0)
+	index.Write(1, 8)
 
 	fmt.Println(index.Read(-1))
 	fmt.Println(index.Read(-2))
 
 	fmt.Println(index.Read(-10))
+
+	_, pos, _ := index.Read(0)
+
+	fmt.Println(pos)
+
+	fmt.Println("Hola")
+
+	data, err := store.Read(pos)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Println(string(data))
+
+	store.Close()
 
 	index.Close()
 
