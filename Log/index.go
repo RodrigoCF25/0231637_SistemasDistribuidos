@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/edsrzf/mmap-go"
-	gommap "github.com/edsrzf/mmap-go"
+	gommap "github.com/tysonmote/gommap"
 )
 
 var (
@@ -21,16 +20,9 @@ type Index struct {
 	size uint64
 }
 
-var MaxSize uint64 = 100
+func NewIndex(f *os.File, c *Config) (*Index, error) {
 
-func NewIndex(filePath string) (*Index, error) {
-
-	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0644)
-
-	if err != nil {
-		err = fmt.Errorf("could not open file: %w", err)
-		return nil, err
-	}
+	file := f
 
 	fileInfo, err := file.Stat()
 
@@ -41,15 +33,13 @@ func NewIndex(filePath string) (*Index, error) {
 
 	size := uint64(fileInfo.Size())
 
-	file.Truncate(int64(MaxSize))
+	file.Truncate(int64(c.MaxIndexBytes))
 
-	mmap, err := gommap.Map(file, mmap.RDWR, 0)
+	mmap, err := gommap.Map(file.Fd(), gommap.PROT_READ|gommap.PROT_WRITE, gommap.MAP_SHARED)
 
 	if err != nil {
 		err = fmt.Errorf("could not mmap file: %w", err)
-		if mmap != nil {
-			mmap.Unmap()
-		}
+
 		return nil, err
 	}
 
@@ -62,7 +52,7 @@ func NewIndex(filePath string) (*Index, error) {
 
 func (i *Index) Close() error {
 
-	err := i.mmap.Unmap()
+	err := i.mmap.UnsafeUnmap()
 
 	if err != nil {
 		err = fmt.Errorf("could not unmap file: %w", err)
@@ -79,10 +69,7 @@ func (i *Index) Close() error {
 }
 
 func (i *Index) Write(offset uint32, position uint64) error {
-
-	if i.size+entWidth > MaxSize {
-		return fmt.Errorf("index size exceeded")
-	}
+	//offset == index
 
 	offBytes := make([]byte, offWidth)
 	posBytes := make([]byte, posWidth)
@@ -99,6 +86,7 @@ func (i *Index) Write(offset uint32, position uint64) error {
 }
 
 func (i *Index) Read(index int64) (offset uint32, position uint64, err error) {
+	//index == offset
 	if i.size == 0 {
 		return offset, position, fmt.Errorf("index is empty")
 	}
