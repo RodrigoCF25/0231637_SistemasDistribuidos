@@ -20,7 +20,7 @@ type Index struct {
 	size uint64
 }
 
-func NewIndex(f *os.File, c *Config) (*Index, error) {
+func NewIndex(f *os.File, c Config) (*Index, error) {
 
 	file := f
 
