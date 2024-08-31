@@ -9,3 +9,13 @@ type Segment struct {
 type Config struct {
 	Segment
 }
+
+func NewConfig(maxStoreBytes, maxIndexBytes, initialOffset uint64) *Config {
+	return &Config{
+		Segment: Segment{
+			MaxStoreBytes: maxStoreBytes,
+			MaxIndexBytes: maxIndexBytes,
+			InitialOffset: initialOffset,
+		},
+	}
+}
