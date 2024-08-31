@@ -236,4 +236,6 @@ func main() {
 	}
 
 	fmt.Println(segment)
+
+	segment.Close()
 }
