@@ -18,18 +18,20 @@ const (
 
 type Store struct {
 	*os.File
-	mutex  sync.RWMutex
-	buffer *bufio.Writer
-	size   uint64
+	mutex    sync.RWMutex
+	buffer   *bufio.Writer
+	size     uint64
+	isClosed bool
 }
 
 func NewStore(f *os.File) (*Store, error) {
 
 	return &Store{
-		mutex:  sync.RWMutex{},
-		File:   f,
-		size:   0,
-		buffer: bufio.NewWriter(f),
+		mutex:    sync.RWMutex{},
+		File:     f,
+		size:     0,
+		buffer:   bufio.NewWriter(f),
+		isClosed: false,
 	}, nil
 }
 
@@ -99,12 +101,18 @@ func (s *Store) Close() error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
+	if s.isClosed {
+		return nil
+	}
+
 	err := s.File.Close()
 
 	if err != nil {
 		err = fmt.Errorf("could not close file: %w", err)
 		return err
 	}
+
+	s.isClosed = true
 
 	return nil
 }

@@ -15,9 +15,10 @@ var (
 )
 
 type Index struct {
-	file *os.File
-	mmap gommap.MMap
-	size uint64
+	file     *os.File
+	mmap     gommap.MMap
+	size     uint64
+	isClosed bool
 }
 
 func NewIndex(f *os.File, c Config) (*Index, error) {
@@ -52,6 +53,10 @@ func NewIndex(f *os.File, c Config) (*Index, error) {
 
 func (i *Index) Close() error {
 
+	if i.isClosed {
+		return nil
+	}
+
 	err := i.mmap.UnsafeUnmap()
 
 	if err != nil {
@@ -65,6 +70,9 @@ func (i *Index) Close() error {
 		err = fmt.Errorf("could not close file: %w", err)
 		return err
 	}
+
+	i.isClosed = true
+
 	return nil
 }
 
