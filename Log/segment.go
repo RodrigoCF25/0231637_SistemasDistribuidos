@@ -55,8 +55,36 @@ func NewSegment(dir string, baseOffset uint64, c Config) (*segment, error) {
 
 //Read
 
-//IsMaxed
+// IsMaxed
+func (s *segment) IsMaxed() bool {
+	return (s.store.size >= s.config.Segment.MaxStoreBytes) || (s.index.size >= s.config.Segment.MaxIndexBytes)
+}
 
 //Remove
 
+func (s *segment) Remove() error {
+	if err := s.store.Close(); err != nil {
+		err = fmt.Errorf("could not close store: %w", err)
+		return err
+	}
+	if err := s.index.Close(); err != nil {
+		err = fmt.Errorf("could not close index: %w", err)
+		return err
+	}
+	if err := os.Remove(s.index.file.Name()); err != nil {
+		err = fmt.Errorf("could not remove index file: %w", err)
+		return err
+	}
+	if err := os.Remove(s.store.Name()); err != nil {
+		err = fmt.Errorf("could not remove store file: %w", err)
+		return err
+	}
+	return nil
+}
+
 //Close
+
+func (s *segment) Close() {
+	s.store.Close()
+	s.index.Close()
+}
