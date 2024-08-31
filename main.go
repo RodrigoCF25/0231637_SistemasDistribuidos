@@ -161,7 +161,7 @@ func main() {
 
 	filepath := "store.bin"
 
-	file, _ := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE, 0644)
+	file, _ := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 
 	store, err := Log.NewStore(file)
 
@@ -194,7 +194,7 @@ func main() {
 		},
 	}
 
-	index, err := Log.NewIndex(file, &c)
+	index, err := Log.NewIndex(file, c)
 
 	if err != nil {
 		fmt.Println(err)
