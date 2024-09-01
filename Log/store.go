@@ -35,13 +35,13 @@ func NewStore(f *os.File) (*Store, error) {
 	}, nil
 }
 
-func (s *Store) Append(data []byte) (bytesWritten uint64, actualPosition uint64, err error) {
+func (s *Store) Append(data []byte) (bytesWritten uint64, positionWhereWritten uint64, err error) {
 	//So what it is stored is the offset of the data and the data itself
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
 	//Get the initial position where the data will be stored
-	actualPosition = s.size
+	positionWhereWritten = s.size
 
 	//Write in the buffer the data
 	var n int
@@ -64,9 +64,7 @@ func (s *Store) Append(data []byte) (bytesWritten uint64, actualPosition uint64,
 		return 0, 0, err
 	}
 
-	actualPosition = s.size
-
-	return bytesWritten, actualPosition, nil
+	return bytesWritten, positionWhereWritten, nil
 
 }
 
