@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path"
+
+	api "github.com/RodrigoCF25/0231637_SistemasDistribuidos/api/v1"
 )
 
 type segment struct {
@@ -51,9 +53,49 @@ func NewSegment(dir string, baseOffset uint64, c Config) (*segment, error) {
 	return s, nil
 }
 
-//Append
+// Append
+func (s *segment) Append(record *api.Record) (off uint64, err error) {
+	off = s.nextOffset
+
+	if s.IsMaxed() {
+		err = fmt.Errorf("segment's store/index is maxed")
+		return 0, err
+	}
+
+	var pos uint64
+	if _, pos, err = s.store.Append(record.Value); err != nil {
+		return 0, err
+	}
+
+	if err = s.index.Write(uint32(s.nextOffset-uint64(s.baseOffset)), pos); err != nil {
+		return 0, err
+	}
+
+	s.nextOffset++
+	return off, nil
+}
 
 //Read
+
+func (s *segment) Read(off uint32) (*api.Record, error) {
+	_, pos, err := s.index.Read(int64(off - uint32(s.baseOffset)))
+
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := s.store.Read(pos)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.Record{
+		Value:  data,
+		Offset: uint64(off),
+	}, nil
+
+}
 
 // IsMaxed
 func (s *segment) IsMaxed() bool {
@@ -84,7 +126,15 @@ func (s *segment) Remove() error {
 
 //Close
 
-func (s *segment) Close() {
-	s.store.Close()
-	s.index.Close()
+func (s *segment) Close() error {
+
+	if err := s.store.Close(); err != nil {
+		err = fmt.Errorf("could not close store: %w", err)
+		return err
+	}
+	if err := s.index.Close(); err != nil {
+		err = fmt.Errorf("could not close index: %w", err)
+		return err
+	}
+	return nil
 }
