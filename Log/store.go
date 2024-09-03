@@ -26,10 +26,15 @@ type Store struct {
 
 func NewStore(f *os.File) (*Store, error) {
 
+	fileInfo, err := f.Stat()
+	if err != nil {
+		return nil, fmt.Errorf("could not get file info: %w", err)
+	}
+
 	return &Store{
 		mutex:    sync.RWMutex{},
 		File:     f,
-		size:     0,
+		size:     uint64(fileInfo.Size()),
 		buffer:   bufio.NewWriter(f),
 		isClosed: false,
 	}, nil
@@ -40,19 +45,27 @@ func (s *Store) Append(data []byte) (bytesWritten uint64, positionWhereWritten u
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
+	fmt.Println()
 	//Get the initial position where the data will be stored
 	positionWhereWritten = s.size
 
-	//Write in the buffer the data
-	var n int
-	n, err = s.buffer.Write(data)
+	//Write the length of the data
+	err = binary.Write(s.buffer, enc, uint64(len(data)))
 
 	if err != nil {
-		err = fmt.Errorf("could not write to buffer: %w", err)
+		err = fmt.Errorf("could not write data length: %w", err)
 		return 0, 0, err
 	}
 
-	bytesWritten = uint64(n)
+	//Write the data
+	n, err := s.buffer.Write(data)
+
+	if err != nil {
+		err = fmt.Errorf("could not write data: %w", err)
+		return 0, 0, err
+	}
+
+	bytesWritten = lenWidth + uint64(n)
 	s.size += bytesWritten
 
 	//Flush the buffer
@@ -72,7 +85,21 @@ func (s *Store) Read(absolute_position uint64) ([]byte, error) {
 
 	data := make([]byte, lenWidth)
 
+	//Read the length of the data
 	n, err := s.ReadAt(data, int64(absolute_position))
+
+	if n == 0 {
+		return nil, fmt.Errorf("could not read from file: %w", err)
+	}
+
+	//Get the length of the data
+	size := enc.Uint64(data)
+
+	data = make([]byte, size)
+
+	//Read the data
+
+	n, err = s.ReadAt(data, int64(absolute_position+lenWidth))
 
 	if n == 0 {
 		return nil, fmt.Errorf("could not read from file: %w", err)
@@ -89,8 +116,6 @@ func (s *Store) ReadAt(p []byte, off int64) (n int, err error) {
 	if err := s.buffer.Flush(); err != nil {
 		return 0, err
 	}
-
-	fmt.Println(("Reading at position: "), off)
 
 	return s.File.ReadAt(p, off)
 }

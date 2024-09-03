@@ -26,7 +26,7 @@ func main() {
 	fmt.Println(segment)
 
 	record := api.Record{
-		Value: []byte("StolasGo"),
+		Value: []byte("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi."),
 	}
 
 	off, err := segment.Append(&record)
@@ -46,5 +46,31 @@ func main() {
 	}
 
 	fmt.Println(record2)
+
+	/*
+		record = api.Record{
+			Value: []byte("A"),
+		}
+
+		off, err = segment.Append(&record)
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		fmt.Println(off)
+
+		record2, err = segment.Read(uint32(off))
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		fmt.Println(record2)
+
+		fmt.Println(segment.Read(10))
+	*/
 
 }
