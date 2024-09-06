@@ -67,7 +67,7 @@ func TestAppendReadClose(t *testing.T) {
 		t.Fatalf("err: %v", err)
 	}
 
-	//Trying to close the store again
+	//Trying to close the store again, should return nil
 	err = store.Close()
 	if err != nil {
 		t.Fatalf("err: %v", err)
