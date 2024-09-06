@@ -76,7 +76,7 @@ func (i *Index) Close() error {
 	return nil
 }
 
-func (i *Index) Write(offset uint32, position uint64) error {
+func (i *Index) Write(offset uint32, position uint64) {
 	//offset == index
 
 	offBytes := make([]byte, offWidth)
@@ -90,7 +90,6 @@ func (i *Index) Write(offset uint32, position uint64) error {
 
 	i.size += entWidth
 
-	return nil
 }
 
 func (i *Index) Read(index int64) (offset uint32, position uint64, err error) {

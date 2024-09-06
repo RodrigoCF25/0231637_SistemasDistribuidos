@@ -67,9 +67,7 @@ func (s *segment) Append(record *api.Record) (off uint64, err error) {
 		return 0, err
 	}
 
-	if err = s.index.Write(uint32(s.nextOffset-uint64(s.baseOffset)), pos); err != nil {
-		return 0, err
-	}
+	s.index.Write(uint32(s.nextOffset-uint64(s.baseOffset)), pos)
 
 	s.nextOffset++
 	return off, nil
