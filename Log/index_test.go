@@ -17,8 +17,6 @@ func TestIndex(t *testing.T) {
 		t.Fatalf("err: %v", err)
 	}
 
-	config := NewConfig(1024, 1024, 0)
-
 	index, err := NewIndex(tempFile, *config)
 
 	if err != nil {
