@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	log "github.com/RodrigoCF25/0231637_SistemasDistribuidos/Log"
+	"github.com/RodrigoCF25/0231637_SistemasDistribuidos/log"
 
 	api "github.com/RodrigoCF25/0231637_SistemasDistribuidos/api/v1"
 )
