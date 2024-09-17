@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"log"
 
-	"github.com/RodrigoCF25/0231637_SistemasDistribuidos/log"
+	"google.golang.org/protobuf/proto"
 
 	api "github.com/RodrigoCF25/0231637_SistemasDistribuidos/api/v1"
 )
@@ -11,38 +14,27 @@ import (
 func main() {
 
 	/*
-		config := Log.NewConfig(1024, 1024, 16)
-
-		fmt.Println(config)
-
-		segment, err := Log.NewSegment("Archivos", 16, *config)
+		myLog, err := log.NewLog("Archivos", *log.NewConfig(1024, 1023, 16))
 
 		if err != nil {
-			fmt.Println(err)
 			return
 		}
 
-		defer segment.Close()
-
-		fmt.Println(segment)
+		defer myLog.Close()
 
 		record := api.Record{
 			Value: []byte("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi."),
 		}
 
-		off, err := segment.Append(&record)
+		off, err := myLog.Append(&record)
 
 		if err != nil {
-			fmt.Println(err)
 			return
 		}
 
-		fmt.Println(off)
-
-		record2, err := segment.Read(uint32(off))
+		record2, err := myLog.Read(off)
 
 		if err != nil {
-			fmt.Println(err)
 			return
 		}
 
@@ -52,16 +44,16 @@ func main() {
 			Value: []byte("StolasGoetia"),
 		}
 
-		off, err = segment.Append(&record)
+		off, err = myLog.Append(&record)
 
 		if err != nil {
+
 			fmt.Println(err)
+
 			return
 		}
 
-		fmt.Println(off)
-
-		record2, err = segment.Read(uint32(off))
+		record2, err = myLog.Read(off)
 
 		if err != nil {
 			fmt.Println(err)
@@ -70,63 +62,50 @@ func main() {
 
 		fmt.Println(record2)
 
-		fmt.Println(segment.Read(10))
+		record2, err = myLog.Read(100)
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		fmt.Println(record2)
 	*/
 
-	myLog, err := log.NewLog("Archivos", *log.NewConfig(1024, 1023, 16))
+	// Crea un nuevo mensaje Record
+	record := &api.Record{
+		Value: []byte("hello world"),
+	}
 
+	fmt.Println(record.Value)
+
+	// Serializa el mensaje
+	data, err := proto.Marshal(record)
+	fmt.Println(data)
 	if err != nil {
-		return
+		log.Fatalf("Failed to marshal: %v", err)
 	}
 
-	defer myLog.Close()
+	// Simula la lectura desde un Reader
+	lenWidth := 8
+	simulatedReaderData := append([]byte{0, 0, 0, 0, 0, 0, 0, 0}, data...) // Prepend lenWidth zeros
+	reader := bytes.NewReader(simulatedReaderData)
 
-	record := api.Record{
-		Value: []byte("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi."),
-	}
-
-	off, err := myLog.Append(&record)
-
+	// Lee los datos
+	b, err := io.ReadAll(reader)
+	fmt.Println(b)
 	if err != nil {
-		return
+		log.Fatalf("Failed to read: %v", err)
 	}
 
-	record2, err := myLog.Read(off)
+	b = b[lenWidth:] // Skip the width
+	fmt.Println(b)
+	read := &api.Record{}
 
+	err = proto.Unmarshal(b, read)
 	if err != nil {
-		return
+		log.Fatalf("Failed to unmarshal: %v", err)
 	}
 
-	fmt.Println(record2)
-
-	record = api.Record{
-		Value: []byte("StolasGoetia"),
-	}
-
-	off, err = myLog.Append(&record)
-
-	if err != nil {
-
-		fmt.Println(err)
-
-		return
-	}
-
-	record2, err = myLog.Read(off)
-
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	fmt.Println(record2)
-
-	record2, err = myLog.Read(100)
-
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	fmt.Println(record2)
+	fmt.Printf("Deserialized Record: %+v\n", read)
 }

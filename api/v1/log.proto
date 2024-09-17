@@ -1,7 +1,7 @@
 syntax = "proto3";
 package log.v1;
 
-option go_package = "github.com/RodrigoCF25/DistributedSystems/api/log_v1";
+option go_package = "github.com/RodrigoCF25/0231637_SistemasDistribuidos/api/log_v1";
 
 
 message Record {

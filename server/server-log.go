@@ -15,7 +15,7 @@ type grpcServer struct {
 	*log.Log
 }
 
-func newgrpcServer(commitlog *log.Log) (srv *grpcServer, err error) {
+func NewGRPCServer(commitlog *log.Log) (srv *grpcServer, err error) {
 	srv = &grpcServer{
 		Log: commitlog,
 	}
