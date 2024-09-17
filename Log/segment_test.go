@@ -1,7 +1,6 @@
 package log
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -17,8 +16,8 @@ func TestSegment(t *testing.T) {
 
 	config := NewConfig(uint64(8*(len(write)+lenWidth)), 24, 16)
 
-	fmt.Println(recordToWrite.Value)
-	fmt.Println(string(recordToWrite.Value))
+	//fmt.Println(recordToWrite.Value)
+	//fmt.Println(string(recordToWrite.Value))
 	tempDir, err := os.MkdirTemp("", "SegmentTestDir")
 
 	defer os.RemoveAll(tempDir)

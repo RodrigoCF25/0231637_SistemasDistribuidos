@@ -6,6 +6,7 @@ import (
 	"path"
 
 	api "github.com/RodrigoCF25/0231637_SistemasDistribuidos/api/v1"
+	"google.golang.org/protobuf/proto"
 )
 
 type segment struct {
@@ -62,8 +63,14 @@ func (s *segment) Append(record *api.Record) (off uint64, err error) {
 		return 0, err
 	}
 
+	data, err := proto.Marshal(record)
+
+	if err != nil {
+		return 0, err
+	}
+
 	var pos uint64
-	if _, pos, err = s.store.Append(record.Value); err != nil {
+	if _, pos, err = s.store.Append(data); err != nil {
 		return 0, err
 	}
 
@@ -88,10 +95,13 @@ func (s *segment) Read(off uint32) (*api.Record, error) {
 		return nil, err
 	}
 
-	return &api.Record{
-		Value:  data,
-		Offset: uint64(off),
-	}, nil
+	record := &api.Record{}
+
+	if err = proto.Unmarshal(data, record); err != nil {
+		return nil, err
+	}
+
+	return record, nil
 
 }
 
