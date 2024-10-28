@@ -1,7 +1,7 @@
 # Define la ruta del archivo proto
 PROTO_FILES=api/v1/*.proto
 
-CONFIG_PATH = ${HOME}/Documents/7to semestre (noveno)/Computo Distribuido/0231637_SistemasDistribuidos
+CONFIG_PATH = ${HOME}/Documents/7tosemestre(noveno)/ComputoDistribuido/0231637_SistemasDistribuidos/cert
 
 .PHONY: init
 
