@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"os"
 	"testing"
@@ -64,7 +63,6 @@ func setupTest(t *testing.T, fn func(*Config)) (
 			Server:   false,
 		})
 
-		fmt.Println("Error: ", err)
 		require.NoError(t, err)
 		tlscreds := credentials.NewTLS(tlsConfig)
 		opts := []grpc.DialOption{grpc.WithTransportCredentials(tlscreds)}
