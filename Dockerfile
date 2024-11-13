@@ -12,4 +12,4 @@ RUN go mod download
 
 
 # Ejecuta `go test` en el contenedor cuando se inicie
-CMD ["go", "test", "/app/server"]
+CMD ["go", "test", "/app/server", "-v"]
