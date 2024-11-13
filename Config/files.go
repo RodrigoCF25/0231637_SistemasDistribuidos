@@ -21,11 +21,12 @@ func configFile(filename string) string {
 	if dir := os.Getenv("CONFIG_DIR"); dir != "" {
 		return filepath.Join(dir, filename)
 	}
-	homeDir, err := os.UserHomeDir()
+
+	certPath, err := filepath.Abs(filepath.Join("..", "cert"))
 	if err != nil {
 		panic(err)
 	}
 
 	// modify this
-	return filepath.Join(homeDir, "Documents", "7tosemestre(noveno)", "ComputoDistribuido", "0231637_SistemasDistribuidos", "cert", filename)
+	return filepath.Join(certPath, filename)
 }
