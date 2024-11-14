@@ -10,6 +10,6 @@ COPY . .
 # Descarga las dependencias y construye el proyecto
 RUN go mod download
 
-
 # Ejecuta `go test` en el contenedor cuando se inicie
 CMD ["go", "test", "/app/server", "-v"]
+
