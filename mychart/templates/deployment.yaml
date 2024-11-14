@@ -33,5 +33,4 @@ spec:
       containers:
         - name: server-test
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          command: ["go", "test", "-v", "./..."]
           imagePullPolicy: {{ .Values.image.pullPolicy }}

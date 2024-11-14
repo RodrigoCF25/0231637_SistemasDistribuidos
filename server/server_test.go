@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"os"
 	"testing"
@@ -90,6 +91,8 @@ func setupTest(t *testing.T, fn func(*Config)) (
 		CAFile:   tlsconfig.CAFile,
 		Server:   true,
 	})
+
+	fmt.Println("Hola")
 
 	require.NoError(t, err)
 	serverCreds := credentials.NewTLS(severTLSConfig)
